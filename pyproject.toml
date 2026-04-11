@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wasc-search-skill"
+version = "0.1.0"
+description = "First runnable WASC search skill baseline"
+requires-python = ">=3.11"
+dependencies = [
+  "beautifulsoup4>=4.12",
+  "rank_bm25>=0.2.2",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
