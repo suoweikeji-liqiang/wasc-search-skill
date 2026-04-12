@@ -1,9 +1,45 @@
 import re
 from typing import Literal
 
-POLICY_KEYWORDS: set[str] = {"政策", "法规", "办法", "条例", "通知", "标准", "guideline", "act"}
-ACADEMIC_KEYWORDS: set[str] = {"论文", "paper", "arxiv", "综述", "研究", "citation", "benchmark"}
-INDUSTRY_KEYWORDS: set[str] = {"公司", "市场", "销量", "行业", "产业", "供应链", "融资", "产品"}
+POLICY_KEYWORDS: set[str] = {
+    "政策",
+    "法规",
+    "规定",
+    "规则",
+    "办法",
+    "条例",
+    "通知",
+    "标准",
+    "指导意见",
+    "guideline",
+    "act",
+    "regulation",
+}
+ACADEMIC_KEYWORDS: set[str] = {
+    "论文",
+    "paper",
+    "arxiv",
+    "综述",
+    "研究",
+    "citation",
+    "benchmark",
+}
+INDUSTRY_KEYWORDS: set[str] = {
+    "公司",
+    "市场",
+    "销量",
+    "出货",
+    "行业",
+    "产业",
+    "芯片",
+    "供给",
+    "出口",
+    "管制",
+    "供应链",
+    "融资",
+    "产品",
+    "forecast",
+}
 
 Intent = Literal["policy", "academic", "industry", "mixed"]
 

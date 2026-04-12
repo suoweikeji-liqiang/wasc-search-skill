@@ -1,0 +1,98 @@
+[
+  {
+    "id": "policy-change-001",
+    "query": "2025年数据出境安全评估办法有哪些变化？",
+    "expected_intent": "policy",
+    "expected_terms": ["变化", "新增", "调整"],
+    "min_sources": 2,
+    "max_latency_ms": 9000
+  },
+  {
+    "id": "policy-change-002",
+    "query": "个人信息出境认证办法2025年修订了哪些条款？",
+    "expected_intent": "policy",
+    "expected_terms": ["修订", "条款"],
+    "min_sources": 2,
+    "max_latency_ms": 9000
+  },
+  {
+    "id": "policy-qa-003",
+    "query": "促进和规范数据跨境流动规定中哪些场景可豁免？",
+    "expected_intent": "policy",
+    "expected_terms": ["豁免", "场景"],
+    "min_sources": 1,
+    "max_latency_ms": 9000
+  },
+  {
+    "id": "industry-vision-004",
+    "query": "Vision Pro 当前销量预测如何？",
+    "expected_intent": "industry",
+    "expected_terms": ["销量", "预测"],
+    "min_sources": 2,
+    "max_latency_ms": 9000
+  },
+  {
+    "id": "industry-chip-005",
+    "query": "2026年AI服务器GPU市场份额预测",
+    "expected_intent": "industry",
+    "expected_terms": ["市场", "预测"],
+    "min_sources": 2,
+    "max_latency_ms": 9000
+  },
+  {
+    "id": "industry-phone-006",
+    "query": "中国智能手机2026年出货量趋势",
+    "expected_intent": "industry",
+    "expected_terms": ["出货", "趋势"],
+    "min_sources": 2,
+    "max_latency_ms": 9000
+  },
+  {
+    "id": "academic-rag-007",
+    "query": "RAG chunking 最新论文综述",
+    "expected_intent": "academic",
+    "expected_terms": ["paper", "arxiv"],
+    "min_sources": 2,
+    "max_latency_ms": 9000
+  },
+  {
+    "id": "academic-rerank-008",
+    "query": "retrieval reranking recent benchmark papers",
+    "expected_intent": "academic",
+    "expected_terms": ["benchmark", "paper"],
+    "min_sources": 2,
+    "max_latency_ms": 9000
+  },
+  {
+    "id": "academic-agent-009",
+    "query": "LLM agent planning 最新研究",
+    "expected_intent": "academic",
+    "expected_terms": ["研究", "paper"],
+    "min_sources": 2,
+    "max_latency_ms": 9000
+  },
+  {
+    "id": "mixed-act-010",
+    "query": "AI Act 对开源模型和产业落地影响",
+    "expected_intent": "mixed",
+    "expected_terms": ["act", "产业"],
+    "min_sources": 2,
+    "max_latency_ms": 10000
+  },
+  {
+    "id": "mixed-energy-011",
+    "query": "欧盟碳关税政策对新能源车出口和供应链影响",
+    "expected_intent": "mixed",
+    "expected_terms": ["政策", "供应链"],
+    "min_sources": 2,
+    "max_latency_ms": 10000
+  },
+  {
+    "id": "mixed-regulation-012",
+    "query": "美国出口管制规则对大模型训练芯片供给影响",
+    "expected_intent": "mixed",
+    "expected_terms": ["规则", "芯片"],
+    "min_sources": 2,
+    "max_latency_ms": 10000
+  }
+]

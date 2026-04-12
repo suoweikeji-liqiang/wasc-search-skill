@@ -1,1 +1,4 @@
 .worktrees/
+.env
+__pycache__/
+*.pyc

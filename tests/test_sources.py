@@ -16,7 +16,16 @@ def test_sources_public_exports_are_minimal_and_consistent() -> None:
 
 def test_policy_queries_match_expected_values() -> None:
     queries = build_web_queries("数据出境办法", "policy")
-    assert queries == ["site:gov.cn 数据出境办法", "数据出境办法"]
+    assert queries == ["site:gov.cn 数据出境办法"]
+
+
+def test_policy_change_queries_add_change_focused_variant() -> None:
+    query = "2025年数据出境安全评估办法有哪些变化？"
+    queries = build_web_queries(query, "policy")
+    assert queries == [
+        f"site:gov.cn {query}",
+        f"site:gov.cn {query} 修订 调整 变化",
+    ]
 
 
 def test_non_policy_queries_match_expected_values() -> None:
@@ -29,5 +38,4 @@ def test_academic_queries_match_expected_values() -> None:
     assert queries == [
         "RAG chunking 论文",
         "RAG chunking 论文 arxiv",
-        "RAG chunking 论文 semantic scholar",
     ]
