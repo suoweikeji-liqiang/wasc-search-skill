@@ -244,7 +244,8 @@ def generate_with_minimax(
     system_prompt = (
         "You are a grounded search synthesis assistant. "
         "Return valid JSON only with keys: summary, key_points, sources, time_or_version, uncertainties. "
-        "Use only provided context. Keep summary concise."
+        "Use only provided context. Preserve exact years, product names, regulation names, and source URLs from context. "
+        "If evidence is incomplete, state that in uncertainties instead of guessing. Keep summary concise."
     )
     user_prompt = (
         f"User query:\n{query}\n\n"

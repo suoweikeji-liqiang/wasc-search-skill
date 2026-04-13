@@ -199,3 +199,25 @@ def test_policy_change_query_injects_hint_terms_when_evidence_missing() -> None:
     assert "条款" in merged
     assert "新增" in merged
     assert "调整" in merged
+
+
+def test_policy_exemption_query_injects_scene_hint_when_evidence_missing() -> None:
+    query = "促进和规范数据跨境流动规定中哪些场景可豁免？"
+
+    class GenericPolicyAdapter:
+        async def search(self, query: str) -> list[dict[str, Any]]:
+            _ = query
+            return [
+                {
+                    "title": "促进和规范数据跨境流动规定",
+                    "url": "https://www.cac.gov.cn/policy/rule",
+                    "snippet": "该规定明确了数据跨境流动的总体框架和管理原则。",
+                }
+            ]
+
+    with patch("skill.main.classify_query", return_value="policy"):
+        result = run_query(query, adapters=[GenericPolicyAdapter()])
+
+    merged = " ".join([result["summary"], *result["key_points"], *result["uncertainties"]])
+    assert "豁免" in merged
+    assert "场景" in merged
