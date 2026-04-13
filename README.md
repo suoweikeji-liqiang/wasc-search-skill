@@ -33,16 +33,3 @@ Quick smoke run on the first 3 cases:
 ```bash
 python scripts/run_competition_eval.py --max-cases 3 --print-cases
 ```
-
-## Demo Video
-
-Generate the Bilibili demo video and cover image:
-
-```bash
-python scripts/generate_bilibili_demo.py
-```
-
-Outputs:
-
-- `artifacts/bilibili_demo/wasc_bilibili_demo.mp4`
-- `artifacts/bilibili_demo/wasc_bilibili_cover.png`
