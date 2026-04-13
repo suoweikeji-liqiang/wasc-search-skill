@@ -81,6 +81,7 @@ ASPECT_EVIDENCE_TERMS: dict[str, tuple[str, ...]] = {
 }
 
 GENERIC_POLICY_TITLE_TERMS = ("政策变化", "政策问答", "faq", "问答", "解读", "盘点")
+PRIMARY_POLICY_EXACT_DOMAINS = ("cac.gov.cn", "gov.cn", "www.gov.cn", "samr.gov.cn", "moj.gov.cn", "chinalaw.gov.cn")
 
 _QUERY_CACHE: dict[str, "RunQueryResult"] = {}
 
@@ -292,6 +293,10 @@ def _domain_matches_any_suffix(domain: str, suffixes: tuple[str, ...]) -> bool:
     return any(domain == suffix or domain.endswith(f".{suffix}") for suffix in suffixes)
 
 
+def _domain_equals_any(domain: str, domains: tuple[str, ...]) -> bool:
+    return any(domain == candidate for candidate in domains)
+
+
 def _is_low_quality_domain(domain: str) -> bool:
     return _domain_matches_any_suffix(domain, tuple(LOW_QUALITY_DOMAINS))
 
@@ -378,13 +383,15 @@ def _result_quality_score(analysis: QueryAnalysis, item: dict[str, Any]) -> int:
     domain = _get_domain(str(item["url"]))
     title = str(item["title"])
     snippet = str(item["snippet"])
-    combined = f"{title} {snippet} {item.get('planned_query', '')}"
+    combined = f"{title} {snippet}"
     role = _infer_result_role(analysis.intent, item)
     score = 0
     if _is_preferred_domain(role if analysis.intent == "mixed" else analysis.intent, domain):
         score += 10
     if _is_low_quality_domain(domain):
         score -= 8
+    if analysis.intent == "policy" and _domain_equals_any(domain, PRIMARY_POLICY_EXACT_DOMAINS):
+        score += 6
     anchor_hits = _anchor_hits(analysis, combined)
     specific_anchor_hits = _specific_anchor_hits(analysis, combined)
     score += anchor_hits * 4
@@ -401,6 +408,15 @@ def _result_quality_score(analysis: QueryAnalysis, item: dict[str, Any]) -> int:
         lowered_title = title.lower()
         if any(term in lowered_title for term in GENERIC_POLICY_TITLE_TERMS):
             score -= 4
+    if analysis.intent == "policy":
+        canonical_title = _clean_source_title(title).replace("《", "").replace("》", "").strip()
+        entity_anchors = [
+            anchor.strip()
+            for anchor in analysis.anchor_terms
+            if anchor.strip() and not re.fullmatch(r"20\d{2}", anchor.strip())
+        ]
+        if any(canonical_title == anchor for anchor in entity_anchors):
+            score += 8
     if anchor_hits == 0:
         score -= 3
     return score
@@ -549,6 +565,12 @@ def _build_key_points(query: str, analysis: QueryAnalysis, results: list[dict[st
             return -1
         score = change_hits * 2
         if analysis.intent == "policy":
+            sentence_anchor_hits = _anchor_hits(analysis, sentence)
+            sentence_specific_hits = _specific_anchor_hits(analysis, sentence)
+            if sentence_anchor_hits == 0 and sentence_specific_hits == 0:
+                return -1
+            score += sentence_anchor_hits * 2
+            score += sentence_specific_hits * 3
             if any(term in sentence for term in POLICY_PRIORITY_CONTEXT_TERMS):
                 score += 3
             elif any(term in sentence for term in POLICY_CONTEXT_TERMS):
@@ -580,11 +602,29 @@ def _build_key_points(query: str, analysis: QueryAnalysis, results: list[dict[st
             "..." if len(best_sentence) > MAX_LOCAL_KEY_POINT_CHARS else ""
         )
 
-    snippets = [str(item["snippet"]) for item in results if str(item["snippet"]).strip()]
+    if analysis.intent == "policy":
+        policy_candidates = []
+        for item in results:
+            title = str(item["title"])
+            snippet = str(item["snippet"])
+            evidence_text = f"{title} {snippet}"
+            if (
+                _anchor_hits(analysis, evidence_text) > 0
+                or _specific_anchor_hits(analysis, evidence_text) > 0
+                or any(term in evidence_text for term in POLICY_CONTEXT_TERMS)
+            ):
+                policy_candidates.append(item)
+        snippets = [str(item["snippet"]) for item in (policy_candidates or results)[:DEFAULT_TOP_SOURCE_LIMIT] if str(item["snippet"]).strip()]
+    else:
+        snippets = [str(item["snippet"]) for item in results if str(item["snippet"]).strip()]
     if not snippets:
         return []
 
-    ranked_snippets = select_top_chunks(query, snippets, limit=min(DEFAULT_TOP_SOURCE_LIMIT, len(snippets)))
+    ranked_snippets = (
+        snippets
+        if analysis.intent == "policy"
+        else select_top_chunks(query, snippets, limit=min(DEFAULT_TOP_SOURCE_LIMIT, len(snippets)))
+    )
     focused = []
     for snippet in ranked_snippets or snippets[:DEFAULT_TOP_SOURCE_LIMIT]:
         prioritized = _extract_priority_sentence(snippet)

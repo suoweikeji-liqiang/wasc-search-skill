@@ -204,7 +204,8 @@ def _extract_anchor_terms(core_query: str, entity_query: str, years: tuple[str, 
         cleaned = cleaned.strip(" ,.;:，。！？")
         if len(cleaned) >= 2:
             candidates.append(cleaned)
-            yearless = re.sub(r"20\d{2}年?", "", cleaned).strip()
+            yearless = re.sub(r"20\d{2}\s*年?", "", cleaned)
+            yearless = " ".join(yearless.split()).strip()
             if len(yearless) >= 2:
                 candidates.append(yearless)
                 for suffix in ("办法", "规定", "条例", "规则", "政策", "指南"):

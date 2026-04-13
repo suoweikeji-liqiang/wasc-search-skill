@@ -1,7 +1,7 @@
 from typing import get_type_hints
 
 from skill.main import RunQueryResult, run_query
-from skill.router import classify_query
+from skill.router import analyze_query, classify_query
 
 
 def test_classify_policy_query() -> None:
@@ -38,3 +38,10 @@ def test_run_query_return_type_is_precise() -> None:
 
 def test_classify_unmatched_query_defaults_to_mixed() -> None:
     assert classify_query("今天天气怎么样？") == "mixed"
+
+
+def test_analyze_query_keeps_yearless_policy_entity_anchor() -> None:
+    analysis = analyze_query("个人信息出境认证办法 2025 年修订了哪些条款？")
+
+    assert analysis.intent == "policy"
+    assert "个人信息出境认证办法" in analysis.anchor_terms

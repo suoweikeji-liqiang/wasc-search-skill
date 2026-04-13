@@ -3,7 +3,7 @@ from typing import Any
 from unittest.mock import patch
 
 from skill.fetcher import SearchAdapter
-from skill.main import clear_query_cache, run_query
+from skill.main import _rank_results_by_intent, _resolve_analysis, clear_query_cache, run_query
 
 
 def test_run_query_skips_minimax_when_local_evidence_is_strong(monkeypatch) -> None:
@@ -284,3 +284,65 @@ def test_run_query_policy_penalizes_generic_policy_faq_when_exact_entity_exists(
     assert result["sources"]
     assert "policy-faq" not in result["sources"][0]["url"]
     assert "数据出境安全评估" in result["sources"][0]["title"]
+
+
+def test_rank_results_policy_ignores_planned_query_anchor_leakage() -> None:
+    analysis = _resolve_analysis("个人信息出境认证办法 2025 年修订了哪些条款？")
+    planned_query = "site:gov.cn 个人信息出境认证办法 2025 年 修订 调整 变化"
+    ranked = _rank_results_by_intent(
+        analysis,
+        [
+            {
+                "title": "海关总署发布公告2025年第219号（关于进境农产品境外企业申报 ...",
+                "url": "https://nxccpit.nx.gov.cn/xwzx/mcxx/202512/t20251204_5099749.html",
+                "snippet": "近期，国内外颁布多项国际贸易投资政策和法令，这些新规定已经或即将开始生效实施。",
+                "planned_lane": "policy",
+                "planned_query": planned_query,
+            },
+            {
+                "title": "个人信息出境认证办法_中央网络安全和信息化委员会办公室",
+                "url": "https://www.cac.gov.cn/2025-10/17/c_1762449728720008.htm",
+                "snippet": "《个人信息出境认证办法》已经审议通过，自2026年1月1日起施行。",
+                "planned_lane": "policy",
+                "planned_query": planned_query,
+            },
+        ],
+    )
+
+    assert ranked
+    assert "cac.gov.cn" in ranked[0]["url"]
+
+
+def test_run_query_policy_prefers_exact_official_title_over_local_digest() -> None:
+    clear_query_cache()
+
+    class PolicyDigestAdapter:
+        async def search(self, query: str) -> list[dict[str, Any]]:
+            _ = query
+            return [
+                {
+                    "title": "网信新规速递｜关于修改《网络安全法》的决定、《个人信息出境认证办法》，自2026年1月1日起施行！",
+                    "url": "https://www.ncwxw.gov.cn/sys-nd/2646.html",
+                    "snippet": (
+                        "关于修改《网络安全法》的决定、《个人信息出境认证办法》，将于明日起正式施行。"
+                        "《中华人民共和国网络安全法》修改后有哪些变化？"
+                    ),
+                },
+                {
+                    "title": "个人信息出境认证办法_中央网络安全和信息化委员会办公室",
+                    "url": "https://www.cac.gov.cn/2025-10/17/c_1762449728720008.htm",
+                    "snippet": "《个人信息出境认证办法》已经2025年7月21日审议通过，自2026年1月1日起施行。",
+                },
+                {
+                    "title": "关于中美经贸关系若干问题的中方立场",
+                    "url": "https://us.china-embassy.gov.cn/chn/zmgx_1/zxxx/202504/t20250409_11590892.htm",
+                    "snippet": "中美经贸关系对全球经济稳定和发展有着重要影响。",
+                },
+            ]
+
+    result = run_query("个人信息出境认证办法 2025 年修订了哪些条款？", adapters=[PolicyDigestAdapter()])
+
+    assert result["sources"]
+    assert "cac.gov.cn" in result["sources"][0]["url"]
+    assert "个人信息出境认证办法" in result["summary"]
+    assert "网络安全法" not in result["summary"]
