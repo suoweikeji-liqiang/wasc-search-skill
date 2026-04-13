@@ -22,7 +22,7 @@ Faster, steadier, and more source-grounded search answers without turning every 
 
 ### Recommended Title
 
-我把搜索问答压进了 5 秒级响应，还保住了 12/12
+我把搜索问答压进了 5 秒级响应，更快、更稳、更省 token
 
 ### Alternate Titles
 
@@ -34,13 +34,15 @@ Faster, steadier, and more source-grounded search answers without turning every 
 
 这条视频展示了一个搜索问答管线的实机演示。
 
+这个项目最早来自一次 WASC 搜索挑战赛尝试，但视频本身更想讲一件更通用的事：怎么把搜索问答做得更快、更稳、更省。
+
 核心不是“每题都调大模型硬写”，而是先做 local-first 检索、预算受控 query planner、evidence guardrail、排序和安全缓存，在保证答案更短、更稳、更可追溯的同时，把延迟和 token 消耗压下来。
 
 仓库地址：
 https://github.com/suoweikeji-liqiang/wasc-search-skill
 
 主要结果：
-- competition eval: 12/12
+- verified cases: 12/12
 - avg latency: 4963.96 ms
 - keyword coverage: 91.67%
 - intent accuracy: 100.00%
@@ -63,10 +65,10 @@ https://github.com/suoweikeji-liqiang/wasc-search-skill
 https://github.com/suoweikeji-liqiang/wasc-search-skill
 
 这条视频主要讲 4 个点：local-first、query planner、evidence guardrail、cache。
-如果你更关心可复现结果，可以直接看 README、评测脚本和 `ref/competition_eval_report.json`。
+如果你更关心可复现结果，可以直接看 README、测试、评测脚本和 `ref/competition_eval_report.json`。
 
 ### Cover Text
 
 - 更快、更稳、更省 token
 - 5 秒级响应
-- 12/12 实测
+- 实测验证

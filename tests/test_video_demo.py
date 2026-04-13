@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from scripts.generate_bilibili_demo import (
+    _scene_frames,
     build_scoreboard_lines,
     extract_hook_metrics,
     wrap_text,
@@ -54,3 +55,27 @@ def test_wrap_text_keeps_mixed_prefix_and_punctuation_attached() -> None:
     assert lines[0] != "2025 "
     assert "。" not in lines
     assert not any(line.startswith("、") or line.startswith("，") for line in lines)
+
+
+def test_video_scenes_keep_competition_language_in_opening_only() -> None:
+    scenes = _scene_frames()
+
+    assert "WASC" in scenes[0]["subtitle"] or "比赛" in scenes[0]["subtitle"]
+    assert all("评委" not in scene["subtitle"] for scene in scenes)
+    assert all("比赛答案" not in scene["subtitle"] for scene in scenes[1:])
+    assert all("比赛解" not in scene["subtitle"] for scene in scenes[1:])
+
+
+def test_scoreboard_lines_use_general_metrics_language() -> None:
+    lines = build_scoreboard_lines(
+        {
+            "passed_cases": 12,
+            "total_cases": 12,
+            "avg_latency_ms": 4264.01,
+            "avg_keyword_coverage": 0.9583,
+            "intent_accuracy": 1.0,
+        }
+    )
+
+    assert lines[0].startswith("verified cases:")
+    assert "competition" not in " ".join(lines).lower()

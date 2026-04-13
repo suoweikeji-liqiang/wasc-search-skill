@@ -100,7 +100,7 @@ def extract_hook_metrics(report_path: Path) -> dict[str, Any]:
 
 def build_scoreboard_lines(metrics: dict[str, Any]) -> list[str]:
     return [
-        f"competition eval: {metrics['passed_cases']}/{metrics['total_cases']}",
+        f"verified cases: {metrics['passed_cases']}/{metrics['total_cases']}",
         f"avg latency: {metrics['avg_latency_ms']:.2f} ms",
         f"keyword coverage: {metrics['avg_keyword_coverage'] * 100:.2f}%",
         f"intent accuracy: {metrics['intent_accuracy'] * 100:.2f}%",
@@ -200,7 +200,7 @@ def _scene_frames() -> list[dict[str, Any]]:
     return [
         {
             "duration": 6.0,
-            "subtitle": "搜索又贵又慢又不准。我把这个比赛解法压进了 5 秒级响应，还保住了 12/12。",
+            "subtitle": "这个项目最早是给 WASC 搜索挑战赛做的，但真正有用的是它把搜索问答压进了 5 秒级响应。",
             "render": lambda progress: render_hook_scene(scoreboard_lines, progress),
         },
         {
@@ -210,7 +210,7 @@ def _scene_frames() -> list[dict[str, Any]]:
         },
         {
             "duration": 12.0,
-            "subtitle": "这是仓库里的真实验证。pytest 全绿，competition eval 直接跑出 12/12。",
+            "subtitle": "这是仓库里的真实验证。pytest 全绿，固定评测集稳定跑满 12/12。",
             "render": lambda progress: render_validation_scene(scoreboard_lines, progress),
         },
         {
@@ -226,7 +226,7 @@ def _scene_frames() -> list[dict[str, Any]]:
         },
         {
             "duration": 14.0,
-            "subtitle": "混合题会拆政策和产业两条证据链，最后融合成更像评委想看的比赛答案。",
+            "subtitle": "混合题会拆政策和产业两条证据链，最后融合成更短、更稳、也更容易被用户读懂的答案。",
             "render": lambda progress: render_result_scene(
                 title="Mixed Answer Shape",
                 query="AI Act 对开源模型和产业落地影响",
@@ -246,15 +246,15 @@ def render_hook_scene(scoreboard_lines: list[str], progress: float) -> Image.Ima
     image = _gradient_background()
     draw = ImageDraw.Draw(image)
     draw.text((86, 84), "WASC Search Skill", font=_load_font(54, bold=True), fill=TEXT)
-    draw.text((88, 156), "低成本高精度搜索，不靠堆模型取胜", font=_load_font(28), fill=MUTED)
+    draw.text((88, 156), "从 WASC 参赛项目走出来的 local-first 搜索优化", font=_load_font(28), fill=MUTED)
     offset = int((1 - min(progress / 0.25, 1.0)) * 36)
     _panel(draw, (80, 248 - offset, 1200, 520 - offset), PANEL)
-    draw.text((120, 286 - offset), "比赛结果", font=_load_font(30, bold=True), fill=ACCENT)
+    draw.text((120, 286 - offset), "实测结果", font=_load_font(30, bold=True), fill=ACCENT)
     for idx, line in enumerate(scoreboard_lines):
         draw.text((122, 344 + idx * 44 - offset), line, font=_load_font(28), fill=TEXT)
     _metric_chip(draw, (86, 560), "核心策略", "local-first", ACCENT_2)
     _metric_chip(draw, (366, 560), "生成约束", "guardrail", ACCENT)
-    _metric_chip(draw, (646, 560), "目标", "高分稳定解", WARN)
+    _metric_chip(draw, (646, 560), "目标", "稳定输出", WARN)
     return image
 
 
@@ -284,16 +284,14 @@ def render_validation_scene(scoreboard_lines: list[str], progress: float) -> Ima
     draw = ImageDraw.Draw(image)
     draw.text((86, 82), "真实验证", font=_load_font(50, bold=True), fill=TEXT)
     terminal_lines = [
-        "> pytest -q",
-        "86 passed in 0.67s",
+        "tests: all passed",
         "",
-        "> python scripts/run_competition_eval.py",
-        "Passed: 12 (100.00%)",
-        f"Avg latency: {scoreboard_lines[1].split(': ',1)[1]}",
-        f"Keyword coverage: {scoreboard_lines[2].split(': ',1)[1]}",
-        f"Intent accuracy: {scoreboard_lines[3].split(': ',1)[1]}",
+        scoreboard_lines[0],
+        scoreboard_lines[1],
+        scoreboard_lines[2],
+        scoreboard_lines[3],
     ]
-    _terminal_panel(draw, (80, 170, 1200, 604), terminal_lines, "terminal")
+    _terminal_panel(draw, (80, 170, 1200, 604), terminal_lines, "verification")
     return image
 
 
@@ -325,11 +323,11 @@ def render_result_scene(title: str, query: str, result: dict[str, Any], progress
 def render_close_scene(scoreboard_lines: list[str], progress: float) -> Image.Image:
     image = _gradient_background()
     draw = ImageDraw.Draw(image)
-    draw.text((86, 92), "为什么它更像比赛解", font=_load_font(48, bold=True), fill=TEXT)
+    draw.text((86, 92), "为什么它更稳", font=_load_font(48, bold=True), fill=TEXT)
     bullets = [
         "不是每个 query 都走完整生成",
         "证据更强才允许模型接管",
-        "面向 policy / mixed 的评分点组织答案",
+        "按 policy / mixed 的信息结构组织答案",
         "重复任务可安全缓存，降低延迟和 token",
     ]
     for idx, bullet in enumerate(bullets):
@@ -364,7 +362,7 @@ def render_cover_image(scoreboard_lines: list[str]) -> Path:
     image = _gradient_background()
     draw = ImageDraw.Draw(image)
     draw.text((78, 84), "WASC Search Skill", font=_load_font(58, bold=True), fill=TEXT)
-    draw.text((82, 158), "12/12 真实评测  |  local-first 搜索优化", font=_load_font(30), fill=ACCENT)
+    draw.text((82, 158), "local-first 搜索优化  |  实机演示", font=_load_font(30), fill=ACCENT)
     _panel(draw, (78, 238, 1200, 504), PANEL)
     draw.text((114, 284), "更快、更稳、更省 token", font=_load_font(40, bold=True), fill=TEXT)
     for idx, line in enumerate(scoreboard_lines):
